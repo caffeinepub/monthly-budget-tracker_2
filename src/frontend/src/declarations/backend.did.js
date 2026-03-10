@@ -19,6 +19,10 @@ export const GroceryItem = IDL.Record({
   'name' : IDL.Text,
   'price' : IDL.Float64,
 });
+export const HouseholdItem = IDL.Record({
+  'name' : IDL.Text,
+  'quantity' : IDL.Nat,
+});
 export const MonthSummary = IDL.Record({
   'salary' : IDL.Float64,
   'expenses' : IDL.Vec(Expense),
@@ -39,8 +43,10 @@ export const idlService = IDL.Service({
       [],
       [],
     ),
+  'decrementHouseholdItem' : IDL.Func([IDL.Text], [], []),
   'deleteExpense' : IDL.Func([IDL.Nat, IDL.Nat, IDL.Text], [], []),
   'deleteGroceryItem' : IDL.Func([IDL.Nat, IDL.Nat, IDL.Text], [], []),
+  'deleteHouseholdItem' : IDL.Func([IDL.Text], [], []),
   'getAllMonths' : IDL.Func([], [IDL.Vec(IDL.Nat)], ['query']),
   'getExpenses' : IDL.Func([IDL.Nat, IDL.Nat], [IDL.Vec(Expense)], ['query']),
   'getGroceryItems' : IDL.Func(
@@ -48,12 +54,14 @@ export const idlService = IDL.Service({
       [IDL.Vec(GroceryItem)],
       ['query'],
     ),
+  'getHouseholdItems' : IDL.Func([], [IDL.Vec(HouseholdItem)], ['query']),
   'getMonthSummary' : IDL.Func(
       [IDL.Nat, IDL.Nat],
       [IDL.Opt(MonthSummary)],
       ['query'],
     ),
   'getSalary' : IDL.Func([IDL.Nat, IDL.Nat], [IDL.Float64], ['query']),
+  'incrementHouseholdItem' : IDL.Func([IDL.Text], [], []),
   'setSalary' : IDL.Func([IDL.Nat, IDL.Nat, IDL.Float64], [], []),
 });
 
@@ -71,6 +79,7 @@ export const idlFactory = ({ IDL }) => {
     'name' : IDL.Text,
     'price' : IDL.Float64,
   });
+  const HouseholdItem = IDL.Record({ 'name' : IDL.Text, 'quantity' : IDL.Nat });
   const MonthSummary = IDL.Record({
     'salary' : IDL.Float64,
     'expenses' : IDL.Vec(Expense),
@@ -91,8 +100,10 @@ export const idlFactory = ({ IDL }) => {
         [],
         [],
       ),
+    'decrementHouseholdItem' : IDL.Func([IDL.Text], [], []),
     'deleteExpense' : IDL.Func([IDL.Nat, IDL.Nat, IDL.Text], [], []),
     'deleteGroceryItem' : IDL.Func([IDL.Nat, IDL.Nat, IDL.Text], [], []),
+    'deleteHouseholdItem' : IDL.Func([IDL.Text], [], []),
     'getAllMonths' : IDL.Func([], [IDL.Vec(IDL.Nat)], ['query']),
     'getExpenses' : IDL.Func([IDL.Nat, IDL.Nat], [IDL.Vec(Expense)], ['query']),
     'getGroceryItems' : IDL.Func(
@@ -100,12 +111,14 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(GroceryItem)],
         ['query'],
       ),
+    'getHouseholdItems' : IDL.Func([], [IDL.Vec(HouseholdItem)], ['query']),
     'getMonthSummary' : IDL.Func(
         [IDL.Nat, IDL.Nat],
         [IDL.Opt(MonthSummary)],
         ['query'],
       ),
     'getSalary' : IDL.Func([IDL.Nat, IDL.Nat], [IDL.Float64], ['query']),
+    'incrementHouseholdItem' : IDL.Func([IDL.Text], [], []),
     'setSalary' : IDL.Func([IDL.Nat, IDL.Nat, IDL.Float64], [], []),
   });
 };

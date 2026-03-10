@@ -1,8 +1,10 @@
 import { Toaster } from "@/components/ui/sonner";
-import { Wallet } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Home, Wallet } from "lucide-react";
 import { useState } from "react";
 import { ExpensesSection } from "./components/ExpensesSection";
 import { GrocerySection } from "./components/GrocerySection";
+import { HouseholdSection } from "./components/HouseholdSection";
 import { MonthNavigator } from "./components/MonthNavigator";
 import { SalarySection } from "./components/SalarySection";
 import { SummaryCard } from "./components/SummaryCard";
@@ -68,28 +70,58 @@ function App() {
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-        {/* Month Navigator */}
+        {/* Month Navigator - always visible */}
         <MonthNavigator
           monthLabel={monthLabel}
           onPrev={handlePrev}
           onNext={handleNext}
         />
 
-        {/* Summary */}
-        <div className="animate-fade-in-up stagger-1 opacity-0">
-          <SummaryCard year={year} month={month} />
-        </div>
+        {/* Tabs */}
+        <Tabs defaultValue="budget">
+          <TabsList className="w-full mb-2">
+            <TabsTrigger
+              value="budget"
+              className="flex-1 flex items-center gap-1.5"
+              data-ocid="app.budget_tab"
+            >
+              <Wallet className="w-3.5 h-3.5" />
+              Budget
+            </TabsTrigger>
+            <TabsTrigger
+              value="household"
+              className="flex-1 flex items-center gap-1.5"
+              data-ocid="app.household_tab"
+            >
+              <Home className="w-3.5 h-3.5" />
+              Household Items
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Two-column layout on desktop */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="animate-fade-in-up stagger-2 opacity-0 space-y-6">
-            <SalarySection year={year} month={month} />
-            <ExpensesSection year={year} month={month} />
-          </div>
-          <div className="animate-fade-in-up stagger-3 opacity-0">
-            <GrocerySection year={year} month={month} />
-          </div>
-        </div>
+          <TabsContent value="budget" className="space-y-6 mt-0">
+            {/* Summary */}
+            <div className="animate-fade-in-up stagger-1 opacity-0">
+              <SummaryCard year={year} month={month} />
+            </div>
+
+            {/* Two-column layout on desktop */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="animate-fade-in-up stagger-2 opacity-0 space-y-6">
+                <SalarySection year={year} month={month} />
+                <ExpensesSection year={year} month={month} />
+              </div>
+              <div className="animate-fade-in-up stagger-3 opacity-0">
+                <GrocerySection year={year} month={month} />
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="household" className="mt-0">
+            <div className="animate-fade-in-up stagger-1 opacity-0">
+              <HouseholdSection />
+            </div>
+          </TabsContent>
+        </Tabs>
       </main>
 
       {/* Footer */}

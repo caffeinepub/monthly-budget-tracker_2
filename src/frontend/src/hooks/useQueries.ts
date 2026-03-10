@@ -1,5 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Expense, GroceryItem, MonthSummary } from "../backend.d";
+import type {
+  Expense,
+  GroceryItem,
+  HouseholdItem,
+  MonthSummary,
+} from "../backend.d";
 import { useActor } from "./useActor";
 
 // ── Query keys ────────────────────────────────────────────
@@ -8,6 +13,7 @@ export const queryKeys = {
   expenses: (year: number, month: number) => ["expenses", year, month],
   groceryItems: (year: number, month: number) => ["groceryItems", year, month],
   salary: (year: number, month: number) => ["salary", year, month],
+  householdItems: ["householdItems"] as const,
 };
 
 // ── Actor Ready ───────────────────────────────────────────
@@ -165,6 +171,9 @@ export function useAddGroceryItem(year: number, month: number) {
       queryClient.invalidateQueries({
         queryKey: queryKeys.summary(year, month),
       });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.householdItems,
+      });
     },
   });
 }
@@ -183,6 +192,67 @@ export function useDeleteGroceryItem(year: number, month: number) {
       });
       queryClient.invalidateQueries({
         queryKey: queryKeys.summary(year, month),
+      });
+    },
+  });
+}
+
+// ── Household Items ───────────────────────────────────────
+export function useHouseholdItems() {
+  const { actor, isFetching } = useActor();
+  return useQuery<HouseholdItem[]>({
+    queryKey: queryKeys.householdItems,
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getHouseholdItems();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useDecrementHouseholdItem() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (name: string) => {
+      if (!actor) throw new Error("No actor");
+      return actor.decrementHouseholdItem(name);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.householdItems,
+      });
+    },
+  });
+}
+
+export function useIncrementHouseholdItem() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (name: string) => {
+      if (!actor) throw new Error("No actor");
+      return actor.incrementHouseholdItem(name);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.householdItems,
+      });
+    },
+  });
+}
+
+export function useDeleteHouseholdItem() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (name: string) => {
+      if (!actor) throw new Error("No actor");
+      return actor.deleteHouseholdItem(name);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.householdItems,
       });
     },
   });

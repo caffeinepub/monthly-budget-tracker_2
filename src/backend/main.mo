@@ -5,6 +5,8 @@ import Text "mo:core/Text";
 import Array "mo:core/Array";
 import Iter "mo:core/Iter";
 
+
+
 actor {
   public type Expense = {
     id : Text;
@@ -17,6 +19,11 @@ actor {
     name : Text;
     price : Float;
     duration : Text;
+  };
+
+  public type HouseholdItem = {
+    name : Text;
+    quantity : Nat;
   };
 
   public type MonthlyData = {
@@ -35,8 +42,9 @@ actor {
   };
 
   var monthlyData = Map.empty<Nat, MonthlyData>();
+  var householdItems = Map.empty<Text, HouseholdItem>();
 
-  public shared func setSalary(year : Nat, month : Nat, salary : Float) : async () {
+  public shared ({ caller }) func setSalary(year : Nat, month : Nat, salary : Float) : async () {
     let key : Nat = year * 100 + month;
     let data = switch (monthlyData.get(key)) {
       case (null) { { salary; expenses = []; groceryItems = [] } };
@@ -45,7 +53,7 @@ actor {
     monthlyData.add(key, data);
   };
 
-  public shared func addExpense(year : Nat, month : Nat, id : Text, name : Text, amount : Float) : async () {
+  public shared ({ caller }) func addExpense(year : Nat, month : Nat, id : Text, name : Text, amount : Float) : async () {
     let key : Nat = year * 100 + month;
     let expense : Expense = { id; name; amount };
     let data = switch (monthlyData.get(key)) {
@@ -57,7 +65,34 @@ actor {
     monthlyData.add(key, data);
   };
 
-  public shared func deleteExpense(year : Nat, month : Nat, id : Text) : async () {
+  public shared ({ caller }) func addGroceryItem(year : Nat, month : Nat, id : Text, name : Text, price : Float, duration : Text) : async () {
+    let key : Nat = year * 100 + month;
+    let groceryItem : GroceryItem = { id; name; price; duration };
+
+    // Update monthly grocery items
+    let data = switch (monthlyData.get(key)) {
+      case (null) { { salary = 0.0; expenses = []; groceryItems = [groceryItem] } };
+      case (?existing) {
+        { salary = existing.salary; expenses = existing.expenses; groceryItems = existing.groceryItems.concat([groceryItem]) };
+      };
+    };
+    monthlyData.add(key, data);
+
+    // Increment corresponding household item
+    let itemName = name.trim(#char ' ').toLower();
+    switch (householdItems.get(itemName)) {
+      case (null) {
+        let newItem : HouseholdItem = { name = itemName; quantity = 1 };
+        householdItems.add(itemName, newItem);
+      };
+      case (?existing) {
+        let updatedItem : HouseholdItem = { existing with quantity = existing.quantity + 1 };
+        householdItems.add(itemName, updatedItem);
+      };
+    };
+  };
+
+  public shared ({ caller }) func deleteExpense(year : Nat, month : Nat, id : Text) : async () {
     let key : Nat = year * 100 + month;
     switch (monthlyData.get(key)) {
       case (null) { () };
@@ -68,19 +103,7 @@ actor {
     };
   };
 
-  public shared func addGroceryItem(year : Nat, month : Nat, id : Text, name : Text, price : Float, duration : Text) : async () {
-    let key : Nat = year * 100 + month;
-    let item : GroceryItem = { id; name; price; duration };
-    let data = switch (monthlyData.get(key)) {
-      case (null) { { salary = 0.0; expenses = []; groceryItems = [item] } };
-      case (?existing) {
-        { salary = existing.salary; expenses = existing.expenses; groceryItems = existing.groceryItems.concat([item]) };
-      };
-    };
-    monthlyData.add(key, data);
-  };
-
-  public shared func deleteGroceryItem(year : Nat, month : Nat, id : Text) : async () {
+  public shared ({ caller }) func deleteGroceryItem(year : Nat, month : Nat, id : Text) : async () {
     let key : Nat = year * 100 + month;
     switch (monthlyData.get(key)) {
       case (null) { () };
@@ -91,7 +114,7 @@ actor {
     };
   };
 
-  public query func getMonthSummary(year : Nat, month : Nat) : async ?MonthSummary {
+  public query ({ caller }) func getMonthSummary(year : Nat, month : Nat) : async ?MonthSummary {
     let key : Nat = year * 100 + month;
     switch (monthlyData.get(key)) {
       case (null) { null };
@@ -104,11 +127,11 @@ actor {
     };
   };
 
-  public query func getAllMonths() : async [Nat] {
+  public query ({ caller }) func getAllMonths() : async [Nat] {
     monthlyData.keys().toArray();
   };
 
-  public query func getSalary(year : Nat, month : Nat) : async Float {
+  public query ({ caller }) func getSalary(year : Nat, month : Nat) : async Float {
     let key : Nat = year * 100 + month;
     switch (monthlyData.get(key)) {
       case (null) { 0.0 };
@@ -116,7 +139,7 @@ actor {
     };
   };
 
-  public query func getExpenses(year : Nat, month : Nat) : async [Expense] {
+  public query ({ caller }) func getExpenses(year : Nat, month : Nat) : async [Expense] {
     let key : Nat = year * 100 + month;
     switch (monthlyData.get(key)) {
       case (null) { [] };
@@ -124,11 +147,47 @@ actor {
     };
   };
 
-  public query func getGroceryItems(year : Nat, month : Nat) : async [GroceryItem] {
+  public query ({ caller }) func getGroceryItems(year : Nat, month : Nat) : async [GroceryItem] {
     let key : Nat = year * 100 + month;
     switch (monthlyData.get(key)) {
       case (null) { [] };
       case (?data) { data.groceryItems };
     };
+  };
+
+  public query ({ caller }) func getHouseholdItems() : async [HouseholdItem] {
+    householdItems.values().toArray();
+  };
+
+  public shared ({ caller }) func incrementHouseholdItem(name : Text) : async () {
+    let itemName = name.trim(#char ' ').toLower();
+    switch (householdItems.get(itemName)) {
+      case (null) {
+        let newItem : HouseholdItem = { name = itemName; quantity = 1 };
+        householdItems.add(itemName, newItem);
+      };
+      case (?existing) {
+        let updatedItem : HouseholdItem = { existing with quantity = existing.quantity + 1 };
+        householdItems.add(itemName, updatedItem);
+      };
+    };
+  };
+
+  public shared ({ caller }) func decrementHouseholdItem(name : Text) : async () {
+    let itemName = name.trim(#char ' ').toLower();
+    switch (householdItems.get(itemName)) {
+      case (null) { () };
+      case (?existing) {
+        // Keep item at 0 instead of removing it
+        let newQuantity = if (existing.quantity > 0) { existing.quantity - 1 } else { 0 };
+        let updatedItem : HouseholdItem = { existing with quantity = newQuantity };
+        householdItems.add(itemName, updatedItem);
+      };
+    };
+  };
+
+  public shared ({ caller }) func deleteHouseholdItem(name : Text) : async () {
+    let itemName = name.trim(#char ' ').toLower();
+    householdItems.remove(itemName);
   };
 };

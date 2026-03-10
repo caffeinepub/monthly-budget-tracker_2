@@ -17,6 +17,7 @@ export interface GroceryItem {
   'name' : string,
   'price' : number,
 }
+export interface HouseholdItem { 'name' : string, 'quantity' : bigint }
 export interface MonthSummary {
   'salary' : number,
   'expenses' : Array<Expense>,
@@ -34,13 +35,17 @@ export interface _SERVICE {
     [bigint, bigint, string, string, number, string],
     undefined
   >,
+  'decrementHouseholdItem' : ActorMethod<[string], undefined>,
   'deleteExpense' : ActorMethod<[bigint, bigint, string], undefined>,
   'deleteGroceryItem' : ActorMethod<[bigint, bigint, string], undefined>,
+  'deleteHouseholdItem' : ActorMethod<[string], undefined>,
   'getAllMonths' : ActorMethod<[], Array<bigint>>,
   'getExpenses' : ActorMethod<[bigint, bigint], Array<Expense>>,
   'getGroceryItems' : ActorMethod<[bigint, bigint], Array<GroceryItem>>,
+  'getHouseholdItems' : ActorMethod<[], Array<HouseholdItem>>,
   'getMonthSummary' : ActorMethod<[bigint, bigint], [] | [MonthSummary]>,
   'getSalary' : ActorMethod<[bigint, bigint], number>,
+  'incrementHouseholdItem' : ActorMethod<[string], undefined>,
   'setSalary' : ActorMethod<[bigint, bigint, number], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;

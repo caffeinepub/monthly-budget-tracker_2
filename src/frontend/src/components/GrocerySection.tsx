@@ -192,7 +192,7 @@ export function GrocerySection({ year, month }: GrocerySectionProps) {
               onChange={(e) => setName(e.target.value)}
               onKeyDown={handleKeyDown}
               data-ocid="grocery.name_input"
-              className="h-8 text-sm bg-input/50 border-border/60 focus:border-primary/60"
+              className="h-8 text-sm border-border/60 focus:border-primary/60"
             />
           </div>
           <div className="space-y-1">
@@ -210,7 +210,7 @@ export function GrocerySection({ year, month }: GrocerySectionProps) {
                 onChange={(e) => setPrice(e.target.value)}
                 onKeyDown={handleKeyDown}
                 data-ocid="grocery.price_input"
-                className="h-8 pl-6 text-sm font-mono bg-input/50 border-border/60 focus:border-primary/60"
+                className="h-8 pl-6 text-sm font-mono border-border/60 focus:border-primary/60"
               />
             </div>
           </div>
@@ -226,7 +226,7 @@ export function GrocerySection({ year, month }: GrocerySectionProps) {
             onChange={(e) => setDuration(e.target.value)}
             onKeyDown={handleKeyDown}
             data-ocid="grocery.duration_input"
-            className="h-8 text-sm bg-input/50 border-border/60 focus:border-primary/60"
+            className="h-8 text-sm border-border/60 focus:border-primary/60"
           />
         </div>
         <Button
