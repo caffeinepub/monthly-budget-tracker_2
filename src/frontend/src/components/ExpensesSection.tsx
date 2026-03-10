@@ -163,7 +163,7 @@ export function ExpensesSection({ year, month }: ExpensesSectionProps) {
               onChange={(e) => setName(e.target.value)}
               onKeyDown={handleKeyDown}
               data-ocid="expense.name_input"
-              className="h-8 text-sm bg-input/50 border-border/60 focus:border-primary/60"
+              className="h-8 text-sm border-border/60 focus:border-primary/60"
             />
           </div>
           <div className="space-y-1">
@@ -181,7 +181,7 @@ export function ExpensesSection({ year, month }: ExpensesSectionProps) {
                 onChange={(e) => setAmount(e.target.value)}
                 onKeyDown={handleKeyDown}
                 data-ocid="expense.amount_input"
-                className="h-8 pl-6 text-sm font-mono bg-input/50 border-border/60 focus:border-primary/60"
+                className="h-8 pl-6 text-sm font-mono border-border/60 focus:border-primary/60"
               />
             </div>
           </div>

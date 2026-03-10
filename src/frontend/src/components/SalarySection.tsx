@@ -97,7 +97,7 @@ export function SalarySection({ year, month }: SalarySectionProps) {
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={handleKeyDown}
                   data-ocid="salary.input"
-                  className="pl-7 font-mono bg-input/50 border-border/60 focus:border-primary/60 focus:ring-primary/20"
+                  className="pl-7 font-mono border-border/60 focus:border-primary/60 focus:ring-primary/20"
                 />
               </div>
               <Button

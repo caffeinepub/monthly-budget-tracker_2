@@ -36,118 +36,79 @@ actor {
 
   var monthlyData = Map.empty<Nat, MonthlyData>();
 
-  public shared ({ caller }) func setSalary(year : Nat, month : Nat, salary : Float) : async () {
+  public shared func setSalary(year : Nat, month : Nat, salary : Float) : async () {
     let key : Nat = year * 100 + month;
     let data = switch (monthlyData.get(key)) {
-      case (null) {
-        {
-          salary;
-          expenses = [];
-          groceryItems = [];
-        };
-      };
-      case (?existingData) {
-        {
-          salary;
-          expenses = existingData.expenses;
-          groceryItems = existingData.groceryItems;
-        };
-      };
+      case (null) { { salary; expenses = []; groceryItems = [] } };
+      case (?existing) { { salary; expenses = existing.expenses; groceryItems = existing.groceryItems } };
     };
     monthlyData.add(key, data);
   };
 
-  public shared ({ caller }) func addExpense(year : Nat, month : Nat, id : Text, name : Text, amount : Float) : async () {
+  public shared func addExpense(year : Nat, month : Nat, id : Text, name : Text, amount : Float) : async () {
     let key : Nat = year * 100 + month;
     let expense : Expense = { id; name; amount };
     let data = switch (monthlyData.get(key)) {
-      case (null) {
-        {
-          salary = 0.0;
-          expenses = [expense];
-          groceryItems = [];
-        };
-      };
-      case (?existingData) {
-        {
-          existingData with
-          expenses = existingData.expenses.concat([expense]);
-        };
+      case (null) { { salary = 0.0; expenses = [expense]; groceryItems = [] } };
+      case (?existing) {
+        { salary = existing.salary; expenses = existing.expenses.concat([expense]); groceryItems = existing.groceryItems };
       };
     };
     monthlyData.add(key, data);
   };
 
-  public shared ({ caller }) func deleteExpense(year : Nat, month : Nat, id : Text) : async () {
+  public shared func deleteExpense(year : Nat, month : Nat, id : Text) : async () {
     let key : Nat = year * 100 + month;
     switch (monthlyData.get(key)) {
       case (null) { () };
       case (?data) {
-        let filteredExpenses = data.expenses.filter(func(e) { e.id != id });
-        let newData = { data with expenses = filteredExpenses };
-        monthlyData.add(key, newData);
+        let filtered = data.expenses.filter(func(e : Expense) : Bool { e.id != id });
+        monthlyData.add(key, { salary = data.salary; expenses = filtered; groceryItems = data.groceryItems });
       };
     };
   };
 
-  public shared ({ caller }) func addGroceryItem(year : Nat, month : Nat, id : Text, name : Text, price : Float, duration : Text) : async () {
+  public shared func addGroceryItem(year : Nat, month : Nat, id : Text, name : Text, price : Float, duration : Text) : async () {
     let key : Nat = year * 100 + month;
-    let groceryItem : GroceryItem = { id; name; price; duration };
+    let item : GroceryItem = { id; name; price; duration };
     let data = switch (monthlyData.get(key)) {
-      case (null) {
-        {
-          salary = 0.0;
-          expenses = [];
-          groceryItems = [groceryItem];
-        };
-      };
-      case (?existingData) {
-        {
-          existingData with
-          groceryItems = existingData.groceryItems.concat([groceryItem]);
-        };
+      case (null) { { salary = 0.0; expenses = []; groceryItems = [item] } };
+      case (?existing) {
+        { salary = existing.salary; expenses = existing.expenses; groceryItems = existing.groceryItems.concat([item]) };
       };
     };
     monthlyData.add(key, data);
   };
 
-  public shared ({ caller }) func deleteGroceryItem(year : Nat, month : Nat, id : Text) : async () {
+  public shared func deleteGroceryItem(year : Nat, month : Nat, id : Text) : async () {
     let key : Nat = year * 100 + month;
     switch (monthlyData.get(key)) {
       case (null) { () };
       case (?data) {
-        let filteredItems = data.groceryItems.filter(func(item) { item.id != id });
-        let newData = { data with groceryItems = filteredItems };
-        monthlyData.add(key, newData);
+        let filtered = data.groceryItems.filter(func(item : GroceryItem) : Bool { item.id != id });
+        monthlyData.add(key, { salary = data.salary; expenses = data.expenses; groceryItems = filtered });
       };
     };
   };
 
-  public query ({ caller }) func getMonthSummary(year : Nat, month : Nat) : async ?MonthSummary {
+  public query func getMonthSummary(year : Nat, month : Nat) : async ?MonthSummary {
     let key : Nat = year * 100 + month;
     switch (monthlyData.get(key)) {
       case (null) { null };
       case (?data) {
-        let totalExpenses = data.expenses.foldLeft(0.0, func(acc, e) { acc + e.amount });
-        let totalGrocerySpend = data.groceryItems.foldLeft(0.0, func(acc, item) { acc + item.price });
+        let totalExpenses = data.expenses.foldLeft(0.0, func(acc : Float, e : Expense) : Float { acc + e.amount });
+        let totalGrocerySpend = data.groceryItems.foldLeft(0.0, func(acc : Float, g : GroceryItem) : Float { acc + g.price });
         let savings = data.salary - totalExpenses - totalGrocerySpend;
-        ?{
-          salary = data.salary;
-          expenses = data.expenses;
-          groceryItems = data.groceryItems;
-          totalExpenses;
-          totalGrocerySpend;
-          savings;
-        };
+        ?{ salary = data.salary; expenses = data.expenses; groceryItems = data.groceryItems; totalExpenses; totalGrocerySpend; savings };
       };
     };
   };
 
-  public query ({ caller }) func getAllMonths() : async [Nat] {
+  public query func getAllMonths() : async [Nat] {
     monthlyData.keys().toArray();
   };
 
-  public query ({ caller }) func getSalary(year : Nat, month : Nat) : async Float {
+  public query func getSalary(year : Nat, month : Nat) : async Float {
     let key : Nat = year * 100 + month;
     switch (monthlyData.get(key)) {
       case (null) { 0.0 };
@@ -155,7 +116,7 @@ actor {
     };
   };
 
-  public query ({ caller }) func getExpenses(year : Nat, month : Nat) : async [Expense] {
+  public query func getExpenses(year : Nat, month : Nat) : async [Expense] {
     let key : Nat = year * 100 + month;
     switch (monthlyData.get(key)) {
       case (null) { [] };
@@ -163,7 +124,7 @@ actor {
     };
   };
 
-  public query ({ caller }) func getGroceryItems(year : Nat, month : Nat) : async [GroceryItem] {
+  public query func getGroceryItems(year : Nat, month : Nat) : async [GroceryItem] {
     let key : Nat = year * 100 + month;
     switch (monthlyData.get(key)) {
       case (null) { [] };
