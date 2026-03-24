@@ -8,12 +8,15 @@ import {
   Loader2,
   Plus,
   ShoppingCart,
+  Tag,
   Trash2,
+  X,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import type { GroceryItem } from "../backend.d";
+import { useCategories } from "../hooks/useCategories";
 import {
   useAddGroceryItem,
   useDeleteGroceryItem,
@@ -35,9 +38,25 @@ function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
+const CATEGORY_COLORS: Record<string, string> = {
+  Kitchen: "bg-amber-500/20 text-amber-700 dark:text-amber-300",
+  Toiletries: "bg-purple-500/20 text-purple-700 dark:text-purple-300",
+  Cleaning: "bg-blue-500/20 text-blue-700 dark:text-blue-300",
+  Food: "bg-green-500/20 text-green-700 dark:text-green-300",
+  Other: "bg-gray-500/20 text-gray-700 dark:text-gray-300",
+};
+
+function getCategoryColor(category: string): string {
+  return (
+    CATEGORY_COLORS[category] ??
+    "bg-indigo-500/20 text-indigo-700 dark:text-indigo-300"
+  );
+}
+
 interface GroceryItemRowProps {
   item: GroceryItem;
   index: number;
+  category?: string;
   onDelete: (id: string) => void;
   isDeleting: boolean;
 }
@@ -45,6 +64,7 @@ interface GroceryItemRowProps {
 function GroceryItemRow({
   item,
   index,
+  category,
   onDelete,
   isDeleting,
 }: GroceryItemRowProps) {
@@ -65,6 +85,14 @@ function GroceryItemRow({
           <span className="text-sm text-foreground font-medium truncate">
             {item.name}
           </span>
+          {category && (
+            <span
+              className={`inline-flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 ${getCategoryColor(category)}`}
+            >
+              <Tag className="h-2.5 w-2.5" />
+              {category}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2 flex-shrink-0 ml-2">
           <span className="font-mono text-sm text-foreground font-semibold">
@@ -104,11 +132,25 @@ export function GrocerySection({ year, month }: GrocerySectionProps) {
   const addGroceryMutation = useAddGroceryItem(year, month);
   const deleteGroceryMutation = useDeleteGroceryItem(year, month);
   const isActorReady = useIsActorReady();
+  const { categories, addCategory, getCategoryForItem, setCategoryForItem } =
+    useCategories();
 
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [duration, setDuration] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [showNewCategory, setShowNewCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleAddCategory = () => {
+    const trimmed = newCategoryName.trim();
+    if (!trimmed) return;
+    addCategory(trimmed);
+    setSelectedCategory(trimmed);
+    setNewCategoryName("");
+    setShowNewCategory(false);
+  };
 
   const handleAdd = async () => {
     const trimmedName = name.trim();
@@ -132,9 +174,13 @@ export function GrocerySection({ year, month }: GrocerySectionProps) {
         price: parsedPrice,
         duration: trimmedDuration,
       });
+      if (selectedCategory) {
+        setCategoryForItem(trimmedName, selectedCategory);
+      }
       setName("");
       setPrice("");
       setDuration("");
+      setSelectedCategory("");
       toast.success(`"${trimmedName}" added to grocery list.`);
     } catch {
       toast.error("Failed to add grocery item. Please try again.");
@@ -192,13 +238,13 @@ export function GrocerySection({ year, month }: GrocerySectionProps) {
               onChange={(e) => setName(e.target.value)}
               onKeyDown={handleKeyDown}
               data-ocid="grocery.name_input"
-              className="h-8 text-sm border-border/60 focus:border-primary/60"
+              className="h-8 text-sm border-border/60 focus:border-primary/60 bg-white text-black"
             />
           </div>
           <div className="space-y-1">
             <Label className="text-xs text-muted-foreground">Price</Label>
             <div className="relative">
-              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-mono">
+              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-mono z-10">
                 $
               </span>
               <Input
@@ -210,7 +256,7 @@ export function GrocerySection({ year, month }: GrocerySectionProps) {
                 onChange={(e) => setPrice(e.target.value)}
                 onKeyDown={handleKeyDown}
                 data-ocid="grocery.price_input"
-                className="h-8 pl-6 text-sm font-mono border-border/60 focus:border-primary/60"
+                className="h-8 pl-6 text-sm font-mono border-border/60 focus:border-primary/60 bg-white text-black"
               />
             </div>
           </div>
@@ -226,9 +272,75 @@ export function GrocerySection({ year, month }: GrocerySectionProps) {
             onChange={(e) => setDuration(e.target.value)}
             onKeyDown={handleKeyDown}
             data-ocid="grocery.duration_input"
-            className="h-8 text-sm border-border/60 focus:border-primary/60"
+            className="h-8 text-sm border-border/60 focus:border-primary/60 bg-white text-black"
           />
         </div>
+
+        {/* Category selector */}
+        <div className="space-y-1">
+          <Label className="text-xs text-muted-foreground">
+            Category{" "}
+            <span className="text-muted-foreground/60">(optional)</span>
+          </Label>
+          {showNewCategory ? (
+            <div className="flex gap-1.5">
+              <Input
+                placeholder="New category name"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleAddCategory();
+                  if (e.key === "Escape") setShowNewCategory(false);
+                }}
+                autoFocus
+                data-ocid="grocery.category_input"
+                className="h-8 text-sm border-border/60 flex-1 bg-white text-black"
+              />
+              <Button
+                size="sm"
+                className="h-8 px-2"
+                onClick={handleAddCategory}
+                data-ocid="grocery.add_category_button"
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 px-2"
+                onClick={() => {
+                  setShowNewCategory(false);
+                  setNewCategoryName("");
+                }}
+              >
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          ) : (
+            <select
+              value={selectedCategory}
+              onChange={(e) => {
+                if (e.target.value === "__add_new__") {
+                  setShowNewCategory(true);
+                  setSelectedCategory("");
+                } else {
+                  setSelectedCategory(e.target.value);
+                }
+              }}
+              data-ocid="grocery.category_select"
+              className="h-8 w-full rounded-md border border-border/60 bg-white text-black text-sm px-2 focus:outline-none focus:ring-1 focus:ring-primary/60"
+            >
+              <option value="">— No category —</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+              <option value="__add_new__">+ Add new category...</option>
+            </select>
+          )}
+        </div>
+
         <Button
           onClick={handleAdd}
           disabled={!isActorReady || addGroceryMutation.isPending}
@@ -261,6 +373,7 @@ export function GrocerySection({ year, month }: GrocerySectionProps) {
                   key={item.id}
                   item={item}
                   index={index}
+                  category={getCategoryForItem(item.name)}
                   onDelete={handleDelete}
                   isDeleting={deletingId === item.id}
                 />

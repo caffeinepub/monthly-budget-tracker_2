@@ -1,0 +1,221 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Fonts ──────────────────────────────────────────────── */
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("/assets/fonts/BricolageGrotesque[opsz,wdth,wght].woff2")
+    format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Figtree";
+  src: url("/assets/fonts/Figtree[wght].woff2") format("woff2");
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/assets/fonts/GeistMono[wght].woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── Design Tokens ───────────────────────────────────────── */
+@layer base {
+  :root {
+    --radius: 0.5rem;
+
+    /* Deep navy-teal dark theme */
+    --background: 0.14 0.022 255;
+    --foreground: 0.93 0.01 240;
+
+    --card: 0.17 0.025 255;
+    --card-foreground: 0.93 0.01 240;
+
+    --popover: 0.19 0.028 255;
+    --popover-foreground: 0.93 0.01 240;
+
+    /* Lime-green primary CTA */
+    --primary: 0.82 0.2 145;
+    --primary-foreground: 0.1 0.02 145;
+
+    --secondary: 0.22 0.03 255;
+    --secondary-foreground: 0.85 0.015 240;
+
+    --muted: 0.2 0.025 255;
+    --muted-foreground: 0.58 0.025 250;
+
+    --accent: 0.25 0.04 255;
+    --accent-foreground: 0.93 0.01 240;
+
+    --destructive: 0.62 0.22 22;
+    --destructive-foreground: 0.985 0 0;
+
+    --border: 0.26 0.03 255;
+    --input: 0.22 0.03 255;
+    --ring: 0.82 0.2 145;
+
+    /* Success / savings positive */
+    --success: 0.75 0.19 145;
+    --success-foreground: 0.1 0.02 145;
+
+    /* Warning / savings negative */
+    --warning: 0.68 0.22 22;
+    --warning-foreground: 0.985 0 0;
+
+    /* Charts */
+    --chart-1: 0.82 0.2 145;
+    --chart-2: 0.65 0.18 195;
+    --chart-3: 0.72 0.2 280;
+    --chart-4: 0.78 0.16 60;
+    --chart-5: 0.62 0.22 22;
+
+    --sidebar: 0.12 0.02 255;
+    --sidebar-foreground: 0.93 0.01 240;
+    --sidebar-primary: 0.82 0.2 145;
+    --sidebar-primary-foreground: 0.1 0.02 145;
+    --sidebar-accent: 0.2 0.025 255;
+    --sidebar-accent-foreground: 0.93 0.01 240;
+    --sidebar-border: 0.26 0.03 255;
+    --sidebar-ring: 0.82 0.2 145;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Figtree", sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Bricolage Grotesque", sans-serif;
+  }
+
+  .mono {
+    font-family: "Geist Mono", monospace;
+  }
+}
+
+/* ── Custom utilities ────────────────────────────────────── */
+@layer utilities {
+  .text-success {
+    color: oklch(var(--success));
+  }
+  .text-warning-destructive {
+    color: oklch(var(--warning));
+  }
+  .bg-success {
+    background-color: oklch(var(--success));
+  }
+  .bg-success\/10 {
+    background-color: oklch(var(--success) / 0.1);
+  }
+  .bg-warning\/10 {
+    background-color: oklch(var(--warning) / 0.1);
+  }
+  .border-success\/30 {
+    border-color: oklch(var(--success) / 0.3);
+  }
+  .border-warning\/30 {
+    border-color: oklch(var(--warning) / 0.3);
+  }
+  .text-success-foreground {
+    color: oklch(var(--success-foreground));
+  }
+  .gradient-header {
+    background: linear-gradient(
+      135deg,
+      oklch(0.14 0.022 255) 0%,
+      oklch(0.17 0.04 270) 100%
+    );
+  }
+  .card-shine {
+    background: linear-gradient(
+      135deg,
+      oklch(0.17 0.025 255) 0%,
+      oklch(0.2 0.035 265) 50%,
+      oklch(0.17 0.025 255) 100%
+    );
+  }
+  .summary-card-positive {
+    background: linear-gradient(
+      135deg,
+      oklch(0.14 0.04 145 / 0.3) 0%,
+      oklch(0.17 0.025 255) 60%
+    );
+    border-color: oklch(0.75 0.19 145 / 0.3);
+  }
+  .summary-card-negative {
+    background: linear-gradient(
+      135deg,
+      oklch(0.14 0.04 22 / 0.3) 0%,
+      oklch(0.17 0.025 255) 60%
+    );
+    border-color: oklch(0.62 0.22 22 / 0.3);
+  }
+}
+
+/* ── Animations ──────────────────────────────────────────── */
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.35s ease-out forwards;
+}
+
+.stagger-1 {
+  animation-delay: 0.05s;
+}
+.stagger-2 {
+  animation-delay: 0.10s;
+}
+.stagger-3 {
+  animation-delay: 0.15s;
+}
+.stagger-4 {
+  animation-delay: 0.20s;
+}
+.stagger-5 {
+  animation-delay: 0.25s;
+}
